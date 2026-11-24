@@ -57,6 +57,19 @@ describe('page script: snapshot', () => {
     assert.deepEqual(hope.snapshot().elements.map((e) => e.label), ['Shown']);
   });
 
+  it('tells a phone number field that mentions OTP apart from an OTP field', () => {
+    const { hope } = loadPage(`
+      <label>Mobile No. (for OTP verification) <input type="tel" value="9876543210"></label>
+      <label>Enter the OTP sent to your mobile <input type="tel" value="4321"></label>
+      <input name="otp" aria-label="Code" value="9999">
+    `);
+    assert.deepEqual(hope.snapshot().elements.map((e) => [e.sensitive, e.value]), [
+      [false, '9876543210'],
+      [true, '[hidden]'],
+      [true, '[hidden]'],
+    ]);
+  });
+
   it('blanks sensitive values and long numbers', () => {
     const { hope } = loadPage(`
       <label>Password <input type="password" value="hunter2"></label>

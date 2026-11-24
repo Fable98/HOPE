@@ -108,11 +108,17 @@
   const SENSITIVE_AUTOCOMPLETE = /^(cc-|current-password|new-password|one-time-code)/i;
   const SENSITIVE_HINT = /pass(word|code|wd)|\bpin\b|cvv|cvc|\bcsc\b|security code|card ?(number|no\b)|cc-?(num|number)|\botp\b|one[- ]time|aadhaa?r|\bpan\b|\bssn\b|social security|account ?(number|no\b)|\biban\b|routing number|sort code/i;
 
+  // A label that starts with a contact word, like "Mobile No. (for OTP)", asks
+  // for a phone number, not a code. "Enter the OTP sent to your mobile" is a code.
+  const CONTACT_FIRST = /^\W*(your )?(mobile|phone|cell|e-?mail)\b/i;
+
   function isSensitive(el) {
     if (el.tagName === 'INPUT' && el.type === 'password') return true;
     if (SENSITIVE_AUTOCOMPLETE.test(el.getAttribute('autocomplete') || '')) return true;
-    const hints = [el.name, el.id, el.getAttribute('placeholder'), el.getAttribute('aria-label'), labelOf(el)].join(' ');
-    return SENSITIVE_HINT.test(hints);
+    if (SENSITIVE_HINT.test(`${el.name || ''} ${el.id || ''}`)) return true;
+    const label = labelOf(el);
+    const text = [el.getAttribute('placeholder'), el.getAttribute('aria-label'), label].join(' ');
+    return SENSITIVE_HINT.test(text) && !CONTACT_FIRST.test(label);
   }
 
   function isDisabled(el) {
