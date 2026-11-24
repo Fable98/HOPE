@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Hope",
+  "version": "0.1.0",
+  "description": "Guides you through busy websites one decision at a time.",
+  "minimum_chrome_version": "116",
+  "permissions": ["sidePanel", "scripting", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "action": {
+    "default_title": "Open Hope"
+  }
+}
