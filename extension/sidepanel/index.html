@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hope</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body class="profile-focus">
+  <header class="topbar">
+    <span class="brand" aria-hidden="true">Hope</span>
+    <button id="settings-button" class="icon-button" type="button" aria-label="Settings" aria-expanded="false">⚙</button>
+  </header>
+
+  <main>
+    <!-- Start: ask for the goal -->
+    <section id="home" class="screen" aria-labelledby="home-title">
+      <h1 id="home-title">What do you want to do?</h1>
+      <p class="muted">Say it in your own words. I will do the easy parts and ask you only what I need.</p>
+      <form id="goal-form">
+        <label for="goal" class="visually-hidden">Your goal</label>
+        <textarea id="goal" rows="3" maxlength="500" placeholder="For example: Appointment with a skin doctor"></textarea>
+        <div class="row">
+          <button id="mic-button" class="secondary" type="button" aria-pressed="false">🎤 Speak</button>
+          <button id="start-button" class="primary" type="submit">Start</button>
+        </div>
+        <p id="mic-note" class="note" hidden></p>
+        <button id="mic-permission" class="secondary" type="button" hidden>Allow the microphone</button>
+      </form>
+      <p id="home-error" class="error" role="alert" hidden></p>
+    </section>
+
+    <!-- A task in progress -->
+    <section id="task" class="screen" hidden>
+      <p class="goal-line">Your goal: <strong id="goal-text"></strong></p>
+      <div class="progress" aria-hidden="true"><div id="progress-fill" class="progress-fill"></div></div>
+      <p id="progress-text" class="progress-text"></p>
+
+      <div id="card" class="card" aria-live="polite"></div>
+
+      <details id="log" class="log">
+        <summary>What I did for you (<span id="log-count">0</span>)</summary>
+        <ol id="log-list"></ol>
+      </details>
+
+      <div class="footer-actions">
+        <button id="help-button" class="secondary" type="button" aria-expanded="false" aria-controls="help-box">🤝 Ask someone for help</button>
+        <button id="stop-button" class="quiet" type="button">Stop</button>
+      </div>
+
+      <section id="help-box" class="help-box" hidden aria-labelledby="help-title">
+        <h2 id="help-title" tabindex="-1">Ask someone you trust</h2>
+        <p class="muted">I will make a link that shows them your goal, how far you got and what I did. It never includes passwords or card numbers. It stops working after one day.</p>
+        <label for="help-note">Message for them (you can leave this empty)</label>
+        <textarea id="help-note" rows="2" maxlength="500" placeholder="Can you call me when you see this?"></textarea>
+        <div class="stack"><button id="help-make" class="primary" type="button">Make a help link</button></div>
+        <div id="help-result" hidden>
+          <p class="note">Send this link to them:</p>
+          <input id="help-link" type="text" readonly aria-label="Help link">
+          <div class="stack">
+            <button id="help-copy" class="secondary" type="button">Copy the link</button>
+            <button id="help-whatsapp" class="secondary" type="button">Send on WhatsApp</button>
+            <button id="help-email" class="secondary" type="button">Send by email</button>
+          </div>
+          <p id="help-status" class="note" role="status"></p>
+        </div>
+        <p id="help-error" class="error" role="alert" hidden></p>
+      </section>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="screen" hidden aria-labelledby="settings-title">
+      <h1 id="settings-title">Settings</h1>
+      <form id="settings-form">
+        <fieldset>
+          <legend>How should Hope look?</legend>
+          <label class="choice-row"><input type="radio" name="profile" value="focus"> <span><strong>Focus</strong>: clean, one thing at a time</span></label>
+          <label class="choice-row"><input type="radio" name="profile" value="reading"> <span><strong>Reading</strong>: bigger, spaced-out text, read aloud</span></label>
+          <label class="choice-row"><input type="radio" name="profile" value="calm"> <span><strong>Calm</strong>: soft colours, gentle words</span></label>
+        </fieldset>
+        <label class="choice-row"><input type="checkbox" id="read-aloud"> <span>Read each question aloud</span></label>
+        <label for="server-url">Hope server address</label>
+        <input id="server-url" type="url" required>
+        <label for="access-code">Access code (if your server needs one)</label>
+        <input id="access-code" type="password" autocomplete="off">
+        <div class="row">
+          <button id="settings-cancel" class="secondary" type="button">Back</button>
+          <button class="primary" type="submit">Save</button>
+        </div>
+        <p id="settings-saved" class="note" role="status" hidden>Saved.</p>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

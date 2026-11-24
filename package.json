@@ -10,6 +10,11 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env server/src/index.js",
     "dev": "node --watch --env-file-if-exists=.env server/src/index.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "e2e": "node scripts/e2e.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.1",
+    "puppeteer-core": "^25.18.1"
   }
 }

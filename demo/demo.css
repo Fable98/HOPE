@@ -1,0 +1,26 @@
+/* Deliberately busy styling for the practice site. */
+body { margin: 0; font: 14px/1.4 Arial, sans-serif; color: #333; background: #fafafa; }
+a { color: #0a58ca; }
+.topnav { display: flex; flex-wrap: wrap; gap: 14px; padding: 8px 16px; background: #0b3d6e; }
+.topnav a { color: #fff; font-size: 12px; text-decoration: none; }
+.promo-strip { background: #ffcc00; padding: 6px 16px; font-size: 12px; font-weight: bold; }
+header.site { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border-bottom: 3px solid #e30613; }
+header.site .logo { font-size: 22px; font-weight: bold; color: #e30613; }
+.layout { display: grid; grid-template-columns: 1fr 260px; gap: 16px; padding: 16px; }
+.panel { background: #fff; border: 1px solid #ddd; padding: 14px; margin-bottom: 12px; }
+.ads .panel { font-size: 12px; background: #fff7e6; }
+.grid-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 12px; }
+.btn { display: inline-block; background: #e30613; color: #fff; border: 0; padding: 8px 14px; font-size: 13px; cursor: pointer; text-decoration: none; }
+.btn.alt { background: #777; }
+.field { margin: 8px 0; }
+.field label { display: block; font-size: 12px; color: #555; }
+.field input, .field select { padding: 5px; font-size: 13px; width: 260px; }
+.step { display: none; }
+.step.active { display: block; }
+.small { font-size: 11px; color: #777; }
+
+#cookie-consent { position: fixed; left: 0; right: 0; bottom: 0; background: #222; color: #eee; padding: 14px 16px; z-index: 1000; font-size: 13px; }
+#cookie-consent button { margin-left: 8px; }
+.chat-widget { position: fixed; right: 18px; bottom: 80px; width: 220px; background: #fff; border: 2px solid #0b3d6e; padding: 10px; z-index: 999; font-size: 12px; }
+.newsletter-popup { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 1001; }
+.newsletter-popup .box { background: #fff; padding: 22px; width: 340px; }

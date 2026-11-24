@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Book Appointment | CityCare Hospitals</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <div class="promo-strip">⚡ Skip the queue! Add Priority Lounge Access at checkout. T&amp;C apply.</div>
+  <nav class="topnav">
+    <a href="index.html">Home</a><a href="#">International Patients</a><a href="#">Careers</a><a href="#">Blog</a><a href="#">Contact</a>
+  </nav>
+  <header class="site"><span class="logo">CityCare+</span><span>Emergency: 1066</span></header>
+
+  <div class="layout">
+    <main class="panel">
+      <h1>Book an OPD Appointment</h1>
+      <p class="small">Fields marked * are mandatory. Kindly ensure details are as per Govt. ID for hassle-free registration.</p>
+      <p id="error" class="small" style="color:#e30613" role="alert"></p>
+
+      <form id="booking" novalidate>
+        <section class="step active" data-step="1">
+          <h2>Step 1 of 4: Speciality &amp; Location</h2>
+          <div class="field">
+            <label for="dept">Department / Speciality *</label>
+            <select id="dept" name="dept" required>
+              <option value="">-- Select --</option>
+              <option value="gen">General Medicine</option>
+              <option value="derm">Dermatology &amp; Cosmetology</option>
+              <option value="dent">Dentistry</option>
+              <option value="cardio">Cardiology</option>
+              <option value="ortho">Orthopaedics</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="loc">Preferred Location *</label>
+            <select id="loc" name="loc" required>
+              <option value="">-- Select --</option>
+              <option value="baner">Pune - Baner</option>
+              <option value="kharadi">Pune - Kharadi</option>
+              <option value="andheri">Mumbai - Andheri</option>
+            </select>
+          </div>
+          <button type="button" class="btn next">Next</button>
+        </section>
+
+        <section class="step" data-step="2">
+          <h2>Step 2 of 4: Doctor &amp; Slot</h2>
+          <fieldset>
+            <legend>Select Consultant *</legend>
+            <label><input type="radio" name="doctor" value="Dr. Meera Kulkarni" data-fee="800" required> Dr. Meera Kulkarni (MD, DVL), 14 yrs exp, ₹800</label><br>
+            <label><input type="radio" name="doctor" value="Dr. Arjun Shah" data-fee="600"> Dr. Arjun Shah (MBBS, DDV), 6 yrs exp, ₹600</label>
+          </fieldset>
+          <fieldset>
+            <legend>Preferred Date *</legend>
+            <label><input type="radio" name="date" value="Tue, 14 Jan" required> Tue, 14 Jan</label>
+            <label><input type="radio" name="date" value="Wed, 15 Jan"> Wed, 15 Jan</label>
+          </fieldset>
+          <div class="field">
+            <label for="slot">Time Slot *</label>
+            <select id="slot" name="slot" required>
+              <option value="">-- Select --</option>
+              <option>10:30 AM</option>
+              <option>12:00 PM</option>
+              <option>5:30 PM</option>
+            </select>
+          </div>
+          <button type="button" class="btn alt back">Back</button>
+          <button type="button" class="btn next">Next</button>
+        </section>
+
+        <section class="step" data-step="3">
+          <h2>Step 3 of 4: Patient Details</h2>
+          <div class="field"><label for="pname">Patient Name as per Govt. ID *</label><input id="pname" name="pname" required></div>
+          <div class="field"><label for="mobile">Mobile No. (for OTP verification) *</label><input id="mobile" name="mobile" type="tel" required></div>
+          <div class="field"><label for="email">Email ID</label><input id="email" name="email" type="email"></div>
+          <div class="field"><label><input type="checkbox" id="priority" name="priority"> Add Priority Lounge Access for ₹199 (Recommended!)</label></div>
+          <div class="field"><label><input type="checkbox" id="terms" name="terms" required> I agree to the Terms &amp; Conditions and Privacy Policy *</label></div>
+          <button type="button" class="btn alt back">Back</button>
+          <button type="button" class="btn next">Proceed</button>
+        </section>
+
+        <section class="step" data-step="4">
+          <h2>Step 4 of 4: Review &amp; Confirm</h2>
+          <p id="review"></p>
+          <p class="small">Consultation fee is payable at the hospital reception. Cancellation allowed up to 2 hours before the slot.</p>
+          <button type="button" class="btn alt back">Back</button>
+          <button type="submit" class="btn">Confirm &amp; Book</button>
+        </section>
+      </form>
+
+      <section id="success" hidden>
+        <h2>Thank you!</h2>
+        <p id="success-text"></p>
+      </section>
+    </main>
+    <aside class="ads">
+      <div class="panel"><strong>Skin Glow Package</strong><br>Hydra facial + consult @ ₹3,999 <a href="#">Buy now</a></div>
+      <div class="panel"><strong>Insurance</strong><br>Cashless OPD with select partners</div>
+    </aside>
+  </div>
+
+  <script src="clutter.js"></script>
+  <script src="book.js"></script>
+</body>
+</html>

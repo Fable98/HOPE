@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hope: allow the microphone</title>
+  <link rel="stylesheet" href="../sidepanel/panel.css">
+  <style>main { max-width: 560px; margin: 40px auto; }</style>
+</head>
+<body>
+  <main>
+    <h1>Let Hope hear you</h1>
+    <p>Hope uses the microphone only while you press <strong>Speak</strong>, to turn what you say into your goal.</p>
+    <p class="muted">Chrome's speech recognition sends the audio to Google to turn it into text.</p>
+    <div class="row"><button id="allow" class="primary" type="button">Allow the microphone</button></div>
+    <p id="result" role="status"></p>
+  </main>
+  <script src="mic.js"></script>
+</body>
+</html>
