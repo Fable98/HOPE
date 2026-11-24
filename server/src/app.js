@@ -2,8 +2,9 @@
 
 import http from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
-import { corsHeaders, createRateLimiter, HttpError, isOriginAllowed, readJson, sendJson } from './http.js';
+import { corsHeaders, createRateLimiter, HttpError, isOriginAllowed, readJson, sendHtml, sendJson } from './http.js';
 import { serveDemo } from './demo.js';
+import { cleanHandoff, createHandoffStore, renderExpiredPage, renderHandoffPage } from './handoff.js';
 import { createLlm, LlmError } from './llm.js';
 import { cleanPlanInput } from './planInput.js';
 import { createPlanner } from './planner.js';
@@ -15,11 +16,12 @@ function tokenMatches(given, expected) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function createApp(config, { fetchImpl = fetch, log = console } = {}) {
+export function createApp(config, { fetchImpl = fetch, log = console, now = () => Date.now() } = {}) {
   const llm = createLlm(config, fetchImpl);
   const plan = createPlanner({ llm, model: config.plannerModel });
   const simplify = createSimplifier({ llm, model: config.simplifyModel });
   const allow = createRateLimiter(config.rateLimitPerMinute);
+  const handoffs = createHandoffStore({ now });
 
   function requireClient(req) {
     if (config.clientToken && !tokenMatches(req.headers['x-hope-token'], config.clientToken)) {
@@ -43,6 +45,12 @@ export function createApp(config, { fetchImpl = fetch, log = console } = {}) {
       if (!texts) throw new HttpError(400, 'invalid_texts');
       return { status: 200, body: { texts: await simplify(texts) } };
     },
+    'POST /api/handoff': async (req) => {
+      requireClient(req);
+      const data = cleanHandoff(await readJson(req));
+      const id = handoffs.create(data);
+      return { status: 201, body: { id, link: `${config.publicUrl}/h/${id}` } };
+    },
   };
 
   return http.createServer(async (req, res) => {
@@ -60,6 +68,13 @@ export function createApp(config, { fetchImpl = fetch, log = console } = {}) {
         }
         if (await serveDemo(url.pathname, res)) return;
         throw new HttpError(404, 'not_found');
+      }
+      // Family help pages are opened by people, from any browser.
+      const help = req.method === 'GET' && url.pathname.match(/^\/h\/([A-Za-z0-9_-]{22})$/);
+      if (help) {
+        const entry = handoffs.get(help[1]);
+        sendHtml(res, entry ? 200 : 404, entry ? renderHandoffPage(entry) : renderExpiredPage());
+        return;
       }
       if (!cors) throw new HttpError(403, 'origin_not_allowed');
       if (req.method === 'OPTIONS') {

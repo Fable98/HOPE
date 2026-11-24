@@ -1,4 +1,4 @@
-// Small HTTP helpers: JSON bodies with a size limit, JSON responses,
+// Small HTTP helpers: JSON bodies with a size limit, JSON and HTML responses,
 // CORS for the extension, and a per-IP rate limit.
 
 export const MAX_BODY_BYTES = 256 * 1024;
@@ -44,6 +44,17 @@ export function sendJson(res, status, data, headers = {}) {
     ...headers,
   });
   res.end(body);
+}
+
+// Pages we render contain no scripts, so lock them down completely.
+export function sendHtml(res, status, html) {
+  res.writeHead(status, {
+    ...SECURITY_HEADERS,
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-store',
+    'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  });
+  res.end(html);
 }
 
 // Allowed when the origin is on the configured list, or, with no list,
