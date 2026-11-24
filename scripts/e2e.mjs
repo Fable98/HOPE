@@ -79,6 +79,21 @@ try {
   const log = await panel.$$eval('#log-list li', (lis) => lis.map((l) => l.textContent));
   console.log(`\nWhat I did for you:\n- ${log.join('\n- ')}`);
   await site.screenshot({ path: path.join(OUT, 'site-final.png') });
+
+  // Family help link: make one and open it like the helper would.
+  await panel.click('#help-button');
+  await panel.type('#help-note', 'Can you check this for me?');
+  await panel.click('#help-make');
+  await panel.waitForFunction(() => document.getElementById('help-link').value, { timeout: 10_000 });
+  const link = await panel.$eval('#help-link', (i) => i.value);
+  await panel.screenshot({ path: path.join(OUT, 'help-link.png') });
+  const helper = await browser.newPage();
+  await helper.goto(link.replace(/^https?:\/\/[^/]+/, SERVER));
+  const helperText = await helper.$eval('main', (m) => m.innerText);
+  await helper.screenshot({ path: path.join(OUT, 'help-page.png'), fullPage: true });
+  const helpOk = helperText.includes(GOAL) && helperText.includes('Can you check this for me?');
+  console.log(`\nHelp link ${link}: ${helpOk ? 'shows goal and message' : 'MISSING CONTENT'}`);
+  finished = finished && helpOk;
 } finally {
   await browser.close();
 }

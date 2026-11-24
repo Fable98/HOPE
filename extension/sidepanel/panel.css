@@ -156,7 +156,12 @@ body.profile-calm .card .reassure { display: block; }
 .log ol { margin: 6px 0 0; padding-left: 1.4em; color: var(--muted); }
 .log li { margin: 4px 0; }
 
-.footer-actions { margin-top: 12px; text-align: center; }
+.footer-actions { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+
+.help-box { margin-top: 14px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); }
+.help-box h2 { font-size: 1.15em; }
+.help-box label { display: block; margin: 10px 0 6px; font-weight: 600; }
+.help-box input[readonly] { font-size: 0.85em; }
 
 fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin: 0 0 14px; }
 legend { font-weight: 600; padding: 0 6px; }

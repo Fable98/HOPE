@@ -41,5 +41,6 @@ export function createApiClient(getSettings, fetchImpl = (...args) => fetch(...a
   return {
     plan: async (body) => (await post('/api/plan', body)).decision,
     simplify: async (texts) => (await post('/api/simplify', { texts })).texts,
+    handoff: async (body) => post('/api/handoff', body),
   };
 }

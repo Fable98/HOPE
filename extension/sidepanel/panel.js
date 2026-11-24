@@ -52,6 +52,12 @@ function onMessage(msg) {
   if (msg.type === 'state') {
     currentView = msg.view;
     render();
+  } else if (msg.type === 'handoff') {
+    showHelpLink(msg.link);
+  } else if (msg.type === 'handoff-error') {
+    $('help-make').disabled = false;
+    $('help-error').textContent = msg.message;
+    $('help-error').hidden = false;
   } else if (msg.type === 'error') {
     showScreen('home');
     const box = $('home-error');
@@ -236,6 +242,9 @@ function startOver() {
   showHomeFor = currentView?.id || null;
   window.speechSynthesis?.cancel();
   showScreen('home');
+  $('help-box').hidden = true;
+  $('help-result').hidden = true;
+  $('help-note').value = '';
   $('goal').value = '';
   $('goal').focus();
 }
@@ -333,6 +342,55 @@ $('mic-permission').addEventListener('click', () => {
 // ---------- task controls ----------
 
 $('stop-button').addEventListener('click', () => send({ type: 'stop' }));
+
+// ---------- ask someone for help ----------
+
+function helpMessage(link) {
+  return `Could you help me with something on a website? ${link}`;
+}
+
+function showHelpLink(link) {
+  $('help-make').disabled = false;
+  $('help-error').hidden = true;
+  $('help-link').value = link;
+  $('help-result').hidden = false;
+  $('help-status').textContent = '';
+  $('help-copy').focus();
+}
+
+$('help-button').addEventListener('click', () => {
+  const box = $('help-box');
+  box.hidden = !box.hidden;
+  $('help-button').setAttribute('aria-expanded', String(!box.hidden));
+  if (!box.hidden) $('help-title').focus();
+});
+
+$('help-make').addEventListener('click', () => {
+  $('help-make').disabled = true;
+  $('help-error').hidden = true;
+  send({ type: 'handoff', note: $('help-note').value.trim() });
+});
+
+$('help-copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText($('help-link').value);
+    $('help-status').textContent = 'Copied. Paste it into a message.';
+  } catch {
+    $('help-link').select();
+    $('help-status').textContent = 'Press Ctrl+C (or ⌘+C) to copy the selected link.';
+  }
+});
+
+$('help-whatsapp').addEventListener('click', () => {
+  const text = encodeURIComponent(helpMessage($('help-link').value));
+  chrome.tabs.create({ url: `https://wa.me/?text=${text}` });
+});
+
+$('help-email').addEventListener('click', () => {
+  const subject = encodeURIComponent('Could you help me?');
+  const bodyText = encodeURIComponent(helpMessage($('help-link').value));
+  chrome.tabs.create({ url: `mailto:?subject=${subject}&body=${bodyText}` });
+});
 
 // ---------- settings ----------
 

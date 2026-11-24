@@ -44,8 +44,28 @@
       </details>
 
       <div class="footer-actions">
+        <button id="help-button" class="secondary" type="button" aria-expanded="false" aria-controls="help-box">🤝 Ask someone for help</button>
         <button id="stop-button" class="quiet" type="button">Stop</button>
       </div>
+
+      <section id="help-box" class="help-box" hidden aria-labelledby="help-title">
+        <h2 id="help-title" tabindex="-1">Ask someone you trust</h2>
+        <p class="muted">I will make a link that shows them your goal, how far you got and what I did. It never includes passwords or card numbers. It stops working after one day.</p>
+        <label for="help-note">Message for them (you can leave this empty)</label>
+        <textarea id="help-note" rows="2" maxlength="500" placeholder="Can you call me when you see this?"></textarea>
+        <div class="stack"><button id="help-make" class="primary" type="button">Make a help link</button></div>
+        <div id="help-result" hidden>
+          <p class="note">Send this link to them:</p>
+          <input id="help-link" type="text" readonly aria-label="Help link">
+          <div class="stack">
+            <button id="help-copy" class="secondary" type="button">Copy the link</button>
+            <button id="help-whatsapp" class="secondary" type="button">Send on WhatsApp</button>
+            <button id="help-email" class="secondary" type="button">Send by email</button>
+          </div>
+          <p id="help-status" class="note" role="status"></p>
+        </div>
+        <p id="help-error" class="error" role="alert" hidden></p>
+      </section>
     </section>
 
     <!-- Settings -->

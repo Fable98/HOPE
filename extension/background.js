@@ -24,9 +24,10 @@ function broadcast(message) {
   }
 }
 
+const api = createApiClient(getSettings);
 const agent = createAgent({
   page: createChromePage(),
-  api: createApiClient(getSettings),
+  api,
   store,
   emit: (view) => broadcast({ type: 'state', view }),
 });
@@ -50,6 +51,35 @@ async function startTask(msg, port) {
   await agent.start(msg.tabId, goal);
 }
 
+// Makes a family help link. Only the goal, progress, the current question,
+// the log and the page address without its query string are sent.
+async function makeHandoff(msg, port) {
+  const view = agent.view();
+  if (!view) return port.postMessage({ type: 'handoff-error', message: 'Start a task first.' });
+  const task = await store.load();
+  let tab = null;
+  try {
+    tab = await chrome.tabs.get(task.tabId);
+  } catch {
+    /* tab closed: send the link without the website */
+  }
+  const card = view.card || {};
+  try {
+    const { link } = await api.handoff({
+      goal: view.goal,
+      pageUrl: tab?.url || '',
+      pageTitle: tab?.title || '',
+      current: card.question || card.summary || card.message || '',
+      note: typeof msg.note === 'string' ? msg.note.slice(0, 500) : '',
+      progress: view.progress,
+      log: (view.log || []).map((l) => l.text),
+    });
+    port.postMessage({ type: 'handoff', link });
+  } catch (err) {
+    port.postMessage({ type: 'handoff-error', message: err.userMessage || 'I could not make a help link.' });
+  }
+}
+
 async function handle(msg, port) {
   await ready;
   if (!msg || typeof msg !== 'object') return;
@@ -65,6 +95,9 @@ async function handle(msg, port) {
       break;
     case 'stop':
       await agent.stop();
+      break;
+    case 'handoff':
+      await makeHandoff(msg, port);
       break;
     default:
       break;
