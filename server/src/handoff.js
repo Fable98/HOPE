@@ -96,7 +96,7 @@ export function renderHandoffPage(entry) {
   const rows = [
     ['They want to', entry.goal],
     entry.progress && ['How far they got', `Step ${entry.progress.step} of about ${entry.progress.total}`],
-    entry.current && ['Where they are stuck', entry.current],
+    entry.current && ['What Hope is showing them now', entry.current],
     entry.note && ['Their message', entry.note],
   ].filter(Boolean);
 
