@@ -11,5 +11,8 @@
     "start": "node --env-file-if-exists=.env server/src/index.js",
     "dev": "node --watch --env-file-if-exists=.env server/src/index.js",
     "test": "node --test \"test/**/*.test.js\""
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.1"
   }
 }
