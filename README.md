@@ -28,3 +28,28 @@ See [docs/architecture.md](docs/architecture.md) for how the pieces fit together
 
 - Node.js 22 or newer
 - Chrome 116 or newer
+
+## Run the backend
+
+```sh
+cp .env.example .env   # optional: add ANTHROPIC_API_KEY or OPENAI_API_KEY
+npm start              # http://localhost:8787
+```
+
+Without an API key the server uses a rule-based mock planner. It is enough to click
+through the demo site, but it is not smart.
+
+| Route                | Purpose                                                    |
+|----------------------|------------------------------------------------------------|
+| `GET /health`        | Liveness check, reports the planner provider               |
+| `POST /api/plan`     | `{ goal, page, history }` → `{ decision }`                 |
+| `POST /api/simplify` | `{ texts: [...] }` → `{ texts: [...] }` in plain language  |
+
+Default models: `claude-sonnet-5-5` plans and `claude-haiku-5-5` rewrites labels.
+Override them with `HOPE_PLANNER_MODEL` and `HOPE_SIMPLIFY_MODEL`.
+
+## Tests
+
+```sh
+npm test
+```
