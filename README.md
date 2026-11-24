@@ -62,8 +62,19 @@ Permissions: `scripting` and access to all sites let Hope read and act on whiche
 you are using, including after it navigates to another domain. `storage` keeps your
 settings and the current task. `sidePanel` shows the cards.
 
+## Try it on the practice site
+
+`npm start` also serves a deliberately cluttered hospital site at
+<http://localhost:8787/demo/>, with a cookie banner, a chat widget, a newsletter popup,
+jargon labels and an upsell. Open it, open Hope and try "Appointment with a skin doctor".
+The mock planner can finish it, and a real model does it with fewer questions.
+
 ## Tests
 
 ```sh
-npm test
+npm test          # unit tests (Node test runner + jsdom), no browser needed
+npm run e2e       # real Chrome: loads the extension, books on the demo site
 ```
+
+`npm run e2e` needs the server running (`npm start`) and a local Chrome. Set
+`CHROME_PATH` if Chrome is not in the default place. Screenshots go to `e2e-output/`.

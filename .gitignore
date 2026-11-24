@@ -6,3 +6,4 @@ Thumbs.db
 coverage/
 dist/
 *.zip
+e2e-output/
