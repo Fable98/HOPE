@@ -3,6 +3,7 @@
 import http from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import { corsHeaders, createRateLimiter, HttpError, isOriginAllowed, readJson, sendJson } from './http.js';
+import { serveDemo } from './demo.js';
 import { createLlm, LlmError } from './llm.js';
 import { cleanPlanInput } from './planInput.js';
 import { createPlanner } from './planner.js';
@@ -50,6 +51,16 @@ export function createApp(config, { fetchImpl = fetch, log = console } = {}) {
     const cors = isOriginAllowed(origin, config.allowedOrigins) ? corsHeaders(origin) : null;
 
     try {
+      // The practice site is public static content, so it skips the origin check.
+      if (req.method === 'GET' && config.serveDemo && (url.pathname === '/demo' || url.pathname.startsWith('/demo/'))) {
+        if (url.pathname === '/demo') {
+          res.writeHead(302, { location: '/demo/' });
+          res.end();
+          return;
+        }
+        if (await serveDemo(url.pathname, res)) return;
+        throw new HttpError(404, 'not_found');
+      }
       if (!cors) throw new HttpError(403, 'origin_not_allowed');
       if (req.method === 'OPTIONS') {
         res.writeHead(204, cors);

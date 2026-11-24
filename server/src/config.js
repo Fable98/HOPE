@@ -52,5 +52,6 @@ export function loadConfig(env = process.env) {
     clientToken: env.HOPE_CLIENT_TOKEN || '',
     allowedOrigins: parseList(env.HOPE_ALLOWED_ORIGINS),
     rateLimitPerMinute: Number.parseInt(env.HOPE_RATE_LIMIT_PER_MINUTE || '120', 10),
+    serveDemo: env.HOPE_SERVE_DEMO !== 'false',
   };
 }
