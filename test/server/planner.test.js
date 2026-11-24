@@ -97,6 +97,19 @@ describe('mockPlan', () => {
     assert.equal(d.type, 'confirm');
   });
 
+  it('asks about a required tick box', () => {
+    const d = plan([{ id: 'h1', role: 'checkbox', label: 'I agree to the Terms', required: true }]);
+    assert.equal(d.type, 'ask');
+    assert.deepEqual(d.options[0].action, { kind: 'check', targetId: 'h1', value: true });
+  });
+
+  it('puts the amount from the page in the confirm summary', () => {
+    const d = plan([{ id: 'h1', role: 'button', label: 'Confirm & Book', submits: true }], {
+      page: { text: 'Asha: Dr. Meera Kulkarni on Tue, 14 Jan. Total payable: ₹800. Fee is paid at the hospital.' },
+    });
+    assert.equal(d.summary, 'You are about to press "Confirm & Book". Total payable: ₹800.');
+  });
+
   it('finishes when the page shows success', () => {
     const d = plan([], { page: { text: 'Thank you! Your appointment is booked.' } });
     assert.equal(d.type, 'done');

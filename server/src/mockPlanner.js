@@ -1,11 +1,12 @@
 // A rule-based stand-in for the planner model. It lets you try the whole
 // extension without an API key, and it keeps the tests deterministic.
 // It is deliberately simple: fill empty fields by asking, pick from lists by
-// asking (or silently when the goal names an option), then press the next button.
+// asking (or silently when the goal names an option), ask about required tick
+// boxes, then press the next button.
 
 const TEXT_ROLES = new Set(['textbox', 'textarea']);
 const DONE_TEXT = /\b(thank you|is confirmed|successfully|booking reference|appointment is booked|order number)\b/i;
-const NEXT_LABEL = /\b(next|continue|proceed|search|find|go)\b/i;
+const NEXT_LABEL = /^(next|continue|proceed|search)\b/i;
 const FINAL_LABEL = /\b(book|confirm|submit|pay|place order|finish|buy|send)\b/i;
 
 function words(text) {
@@ -23,6 +24,12 @@ function goalMatches(goal, label) {
 function progressFor(history) {
   const step = history.filter((h) => h.kind === 'action' || h.kind === 'answer').length + 1;
   return { step, total: Math.max(step + 2, 5) };
+}
+
+// The first sentence on the page that mentions money, so the confirm card shows it.
+function amountSentence(text) {
+  const match = (text || '').match(/[^.!?]*(₹|\$|€|£|\bRs\.?)\s?\d[\d,]*(\.\d+)?[^.!?]*[.!?]?/);
+  return match ? ` ${match[0].trim()}` : '';
 }
 
 function inputKind(el) {
@@ -102,6 +109,16 @@ export function mockPlan({ goal, page, history }) {
     };
   }
 
+  for (const el of usable) {
+    if (el.role !== 'checkbox' || !el.required || el.checked || handled.has(el.id)) continue;
+    return {
+      type: 'ask', reason: 'required tick box', progress,
+      question: 'Do you agree to this?',
+      help: el.label,
+      options: [{ label: 'Yes, I agree', action: { kind: 'check', targetId: el.id, value: true } }],
+    };
+  }
+
   const last = [...history].reverse().find((h) => h.kind === 'action');
   const buttons = usable.filter((e) => (e.role === 'button' || e.role === 'link') && e.id !== last?.targetId);
   const next = buttons.find((b) => NEXT_LABEL.test(b.label) && !FINAL_LABEL.test(b.label));
@@ -111,7 +128,7 @@ export function mockPlan({ goal, page, history }) {
   const confirmClick = (b) => ({
     type: 'confirm', reason: 'final button', progress,
     action: { kind: 'click', targetId: b.id },
-    summary: `You are about to press "${b.label}". This sends your details.`,
+    summary: `You are about to press "${b.label}".${amountSentence(page.text)}`,
   });
   const submitFinal = buttons.find((b) => b.submits && FINAL_LABEL.test(b.label));
   if (submitFinal) return confirmClick(submitFinal);
