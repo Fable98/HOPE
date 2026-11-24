@@ -73,7 +73,12 @@
     return 'button';
   }
 
+  // "Preferred Location *" -> "Preferred Location". Required is reported separately.
   function labelOf(el) {
+    return rawLabelOf(el).replace(/\s*\*+\s*$/, '').trim();
+  }
+
+  function rawLabelOf(el) {
     const labelledBy = el.getAttribute('aria-labelledby');
     if (labelledBy) {
       const text = labelledBy.split(/\s+/).map((id) => textOf(document.getElementById(id))).join(' ');

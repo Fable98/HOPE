@@ -94,6 +94,7 @@ export function mockPlan({ goal, page, history }) {
   }
   for (const [group, radios] of groups) {
     if (radios.some((r) => r.checked) || handled.has(`group:${group}`)) continue;
+    const question = `Which one do you want for "${group}"?`;
     const match = radios.find((r) => goalMatches(goal, r.label));
     if (match) {
       return {
@@ -104,7 +105,7 @@ export function mockPlan({ goal, page, history }) {
     }
     return {
       type: 'ask', reason: 'choose radio', progress,
-      question: 'Which one works for you?',
+      question,
       options: radios.slice(0, 5).map((r) => ({ label: r.label, action: { kind: 'click', targetId: r.id } })),
     };
   }

@@ -7,7 +7,7 @@ describe('page script: snapshot', () => {
     const { hope, document } = loadPage(`
       <h1>Book a visit</h1>
       <form>
-        <label for="name">Your name</label><input id="name" required>
+        <label for="name">Your name *</label><input id="name" required>
         <label>Email <input type="email" name="email" value="a@b.co"></label>
         <select aria-label="Department"><option value="">Choose</option><option value="derm">Dermatology</option></select>
         <fieldset><legend>Which day?</legend>
