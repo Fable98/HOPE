@@ -1,0 +1,15 @@
+{
+  "name": "hope",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hope: a Chrome extension that guides people through cluttered websites one decision at a time.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/src/index.js",
+    "dev": "node --watch --env-file-if-exists=.env server/src/index.js",
+    "test": "node --test \"test/**/*.test.js\""
+  }
+}
