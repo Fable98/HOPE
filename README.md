@@ -48,6 +48,20 @@ through the demo site, but it is not smart.
 Default models: `claude-sonnet-5-5` plans and `claude-haiku-5-5` rewrites labels.
 Override them with `HOPE_PLANNER_MODEL` and `HOPE_SIMPLIFY_MODEL`.
 
+## Load the extension
+
+1. Start the backend (above).
+2. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick
+   the `extension/` folder.
+3. Open a website, click the Hope icon in the toolbar. The side panel opens.
+4. Type or say a goal and press **Start**.
+
+If your server is not on `http://localhost:8787`, change the address under ⚙ Settings.
+
+Permissions: `scripting` and access to all sites let Hope read and act on whichever site
+you are using, including after it navigates to another domain. `storage` keeps your
+settings and the current task. `sidePanel` shows the cards.
+
 ## Tests
 
 ```sh
