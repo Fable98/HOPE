@@ -283,6 +283,9 @@
     if (kind === 'click') {
       const role = roleOf(el);
       const wasChecked = isChecked(el);
+      // Keep the task in this tab: Hope cannot follow a new tab yet.
+      const link = el.closest('a[target]');
+      if (link && link.target !== '_self') link.setAttribute('target', '_self');
       // Start watching before the click: handlers often change the page synchronously.
       const watching = waitForChange(pageSignature());
       el.focus?.();
@@ -360,5 +363,114 @@
     return { ok: true };
   }
 
-  window.__hope = { version: VERSION, snapshot, act, highlight, clearHighlight, _redactText: redactText };
+  // ---------- clutter: cookie banners, chat widgets, upsell popups ----------
+
+  const CHAT_SELECTORS = [
+    '#intercom-container', '.intercom-lightweight-app', '.intercom-launcher',
+    '#hubspot-messages-iframe-container', '#drift-widget', '#drift-frame-controller',
+    'iframe#launcher', '#fc_frame', '.tawk-min-container', '#crisp-chatbox', '.crisp-client',
+    '#tidio-chat', '#zsiq_float', '.zsiq_floatmain', 'iframe[title*="chat" i]',
+    '[id*="chat-widget" i]', '[class*="chat-widget" i]', '[class*="chatwidget" i]',
+  ];
+
+  const COOKIE_CONTAINER = [
+    '#onetrust-banner-sdk', '#CybotCookiebotDialog', '.cc-window', '#didomi-host', '#truste-consent-track',
+    '[id*="cookie" i]', '[class*="cookie" i]', '[id*="consent" i]', '[class*="consent" i]',
+    '[id*="gdpr" i]', '[class*="gdpr" i]', '[aria-label*="cookie" i]',
+  ].join(',');
+
+  const DIALOG_CONTAINER = [
+    '[role="dialog"]', '[role="alertdialog"]', 'dialog[open]', '[aria-modal="true"]',
+    '[class*="modal" i]', '[class*="popup" i]', '[id*="popup" i]', '[class*="newsletter" i]', '[id*="newsletter" i]',
+  ].join(',');
+
+  const CLICKABLE = 'button, a, [role="button"], input[type="button"], input[type="submit"]';
+
+  // Turn down optional cookies when the site allows it; we never accept on the user's behalf.
+  const REJECT_LABEL = /^(reject|decline|deny|refuse)( all)?( cookies)?$|^(use |allow )?(only )?(strictly )?(necessary|essential|required)( cookies)?( only)?$|^continue without accepting$|\b(reject all|necessary only|essential only|only necessary|only essential)\b/i;
+  const CLOSE_LABEL = /^(×|✕|✖|x|close|dismiss|close banner|close dialog|close this|close popup)$/i;
+  const DISMISS_LABEL = /^(no,? thanks|no thank you|not now|maybe later|skip|i'?m not interested|not interested|remind me later|continue without|close|dismiss|×|✕|✖|x)$/i;
+  const UPSELL_TEXT = /\b(subscribe|newsletter|sign up for|% off|discount|special offer|limited time|download (our|the) app|get the app|install (our|the) app|upgrade to|go premium|exclusive deal)\b/i;
+
+  const handled = new WeakSet();
+  let chatReported = false;
+
+  function clickableLabel(el) {
+    return clean(el.getAttribute('aria-label') || textOf(el) || el.value || el.title || '').replace(/[.!]$/, '');
+  }
+
+  function outermost(nodes) {
+    return nodes.filter((n) => !nodes.some((other) => other !== n && other.contains(n)));
+  }
+
+  function findButton(container, pattern) {
+    return Array.from(container.querySelectorAll(CLICKABLE)).find((b) => isVisible(b) && pattern.test(clickableLabel(b)));
+  }
+
+  function unlockScroll() {
+    for (const el of [document.documentElement, document.body]) {
+      if (el && getComputedStyle(el).overflow === 'hidden') el.style.setProperty('overflow', 'auto', 'important');
+    }
+  }
+
+  function hideChatWidgets() {
+    ensureStyle('hope-clutter-style', `${CHAT_SELECTORS.join(',')} { display: none !important; }`);
+    if (chatReported) return [];
+    const found = CHAT_SELECTORS.some((sel) => {
+      try { return document.querySelector(sel); } catch { return false; }
+    });
+    if (!found) return [];
+    chatReported = true;
+    return [{ kind: 'chat', text: 'Hid a chat pop-up' }];
+  }
+
+  function handleCookieBanners() {
+    const out = [];
+    const candidates = Array.from(document.querySelectorAll(COOKIE_CONTAINER)).filter((el) =>
+      !handled.has(el) && el !== document.body && el !== document.documentElement && isVisible(el)
+      && /cookie|consent|privacy/i.test(textOf(el)) && textOf(el).length < 4000
+      && el.querySelector(CLICKABLE));
+    for (const banner of outermost(candidates)) {
+      handled.add(banner);
+      const reject = findButton(banner, REJECT_LABEL);
+      if (reject) {
+        reject.click();
+        out.push({ kind: 'cookie', text: 'Turned down optional cookies on the cookie banner' });
+        continue;
+      }
+      const close = findButton(banner, CLOSE_LABEL);
+      if (close) {
+        close.click();
+        out.push({ kind: 'cookie', text: 'Closed the cookie banner' });
+        continue;
+      }
+      banner.style.setProperty('display', 'none', 'important');
+      unlockScroll();
+      out.push({ kind: 'cookie', text: 'Hid the cookie banner (I did not accept anything)' });
+    }
+    return out;
+  }
+
+  function handleUpsellPopups() {
+    const out = [];
+    const candidates = Array.from(document.querySelectorAll(DIALOG_CONTAINER)).filter((el) =>
+      !handled.has(el) && el !== document.body && isVisible(el)
+      && UPSELL_TEXT.test(textOf(el)) && textOf(el).length < 3000
+      && !el.querySelector('input[type="password"]'));
+    for (const popup of outermost(candidates)) {
+      handled.add(popup);
+      const dismiss = findButton(popup, DISMISS_LABEL);
+      if (dismiss) {
+        dismiss.click();
+        out.push({ kind: 'popup', text: 'Closed a pop-up offer' });
+      }
+    }
+    return out;
+  }
+
+  function dismissClutter() {
+    return [...hideChatWidgets(), ...handleCookieBanners(), ...handleUpsellPopups()];
+  }
+
+  window.__hope = { version: VERSION, snapshot, act, highlight, clearHighlight, dismissClutter, _redactText: redactText };
 })();

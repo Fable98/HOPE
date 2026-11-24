@@ -64,6 +64,12 @@ export function createChromePage() {
       return result;
     },
 
+    async dismissClutter(tabId) {
+      const items = (await call(tabId, 'dismissClutter')) || [];
+      if (items.length) await sleep(400); // let banners animate away before the snapshot
+      return items;
+    },
+
     highlight: (tabId, id) => call(tabId, 'highlight', [id]),
     clearHighlight: (tabId) => call(tabId, 'clearHighlight'),
   };
