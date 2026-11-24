@@ -83,8 +83,11 @@ export function createAgent({ page, api, store, emit = () => {}, now = () => Dat
     emit(publicView());
   }
 
+  // Every card gets a new number, so the panel never mistakes two cards with
+  // the same wording for one (and never sends an answer to the wrong question).
   function show(card, status = card.type) {
-    task.card = card;
+    task.cardSeq = (task.cardSeq || 0) + 1;
+    task.card = { ...card, seq: task.cardSeq };
     task.status = status;
   }
 
@@ -112,18 +115,20 @@ export function createAgent({ page, api, store, emit = () => {}, now = () => Dat
 
   // ---------- page helpers ----------
 
+  // Returns how many things it cleared.
   async function tidyPage() {
-    if (!page.dismissClutter) return;
+    if (!page.dismissClutter) return 0;
     let items = [];
     try {
       items = (await page.dismissClutter(task.tabId)) || [];
     } catch {
-      return; // clutter handling is best effort
+      return 0; // clutter handling is best effort
     }
     for (const item of items) {
       addLog(item.text);
       addHistory({ kind: 'clutter', summary: `Hope automatically: ${item.text}` });
     }
+    return items.length;
   }
 
   async function execute(action, snap) {
@@ -219,6 +224,13 @@ export function createAgent({ page, api, store, emit = () => {}, now = () => Dat
         await stuck('I got confused on this page.');
         return;
       }
+      // Popups often appear a few seconds after the page loads. If one showed up
+      // while we were planning, the plan may be about the popup: clear it and look again.
+      if (decision.type === 'ask' || decision.type === 'confirm') {
+        if ((await tidyPage()) > 0) continue;
+        if (!alive()) return;
+      }
+
       setProgress(decision.progress);
 
       if (decision.type === 'done') {
@@ -353,6 +365,7 @@ export function createAgent({ page, api, store, emit = () => {}, now = () => Dat
     // payload: { choice } | { text } | { manualDone } | { confirm } | { noneOfThese } | { retry }
     async answer(payload = {}) {
       if (!task) return null;
+      if (payload.seq !== undefined && payload.seq !== task.card?.seq) return publicView(); // stale click
       const pending = task.pending;
 
       if (payload.retry) {

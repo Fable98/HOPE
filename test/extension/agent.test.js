@@ -114,6 +114,20 @@ describe('agent loop', () => {
     assert.equal(calls.act.length, 0);
   });
 
+  it('ignores an answer meant for an older card', async () => {
+    const { agent, calls } = setup([
+      { type: 'ask', question: 'Which one?', options: [{ label: 'Tuesday', action: click('h2') }] },
+    ]);
+    await agent.start(1, 'x');
+    const view = await settle(agent);
+    await agent.answer({ choice: 0, seq: view.card.seq - 1 });
+    assert.equal(agent.view().status, 'asking');
+    assert.equal(calls.act.length, 0);
+    await agent.answer({ choice: 0, seq: view.card.seq });
+    await settle(agent, ['done']);
+    assert.deepEqual(calls.act, [click('h2')]);
+  });
+
   it('asks again before an option that leads to an irreversible click', async () => {
     const { agent, calls } = setup([
       { type: 'ask', question: 'Ready?', options: [{ label: 'Yes, book it', action: click('h6') }, { label: 'Not yet', action: click('h7') }] },
@@ -225,6 +239,22 @@ describe('agent loop', () => {
     assert.equal(calls.plan.length, 0);
     await agent.answer({ retry: true });
     assert.equal((await settle(agent, ['done'])).card.message, 'Paid.');
+  });
+
+  it('looks again when a popup appears while planning', async () => {
+    const clutter = [];
+    const { agent, calls } = setup([
+      () => {
+        clutter.push({ kind: 'popup', text: 'Closed a pop-up offer' }); // popup shows up late
+        return { type: 'ask', question: 'Your email for our newsletter?', input: { targetId: 'h4' } };
+      },
+      { type: 'ask', question: 'Which day works for you?', options: [{ label: 'Tuesday', action: click('h2') }] },
+    ], { clutter });
+    await agent.start(1, 'x');
+    const view = await settle(agent);
+    assert.equal(view.card.question, 'Which day works for you?');
+    assert.equal(calls.plan.length, 2);
+    assert.ok(view.log.some((l) => l.text === 'Closed a pop-up offer'));
   });
 
   it('logs clutter it handled and tells the planner', async () => {

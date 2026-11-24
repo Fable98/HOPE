@@ -114,8 +114,9 @@ function speakButton(text) {
 
 const reassure = () => h('p', { class: 'reassure', text: 'Take your time. Nothing happens until you choose.' });
 
+// The card number lets the agent ignore a click on a card that is already gone.
 function answer(payload) {
-  send({ type: 'answer', payload });
+  send({ type: 'answer', payload: { ...payload, seq: currentView?.card?.seq } });
 }
 
 const CARD_RENDERERS = {
@@ -206,7 +207,7 @@ const CARD_RENDERERS = {
 };
 
 function cardKey(card) {
-  return `${card.type}|${card.question || card.summary || card.message || ''}`;
+  return `${card.type}|${card.seq ?? ''}`;
 }
 
 function renderCard(card, view) {
