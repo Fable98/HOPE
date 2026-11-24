@@ -44,6 +44,9 @@ through the demo site, but it is not smart.
 | `GET /health`        | Liveness check, reports the planner provider               |
 | `POST /api/plan`     | `{ goal, page, history }` → `{ decision }`                 |
 | `POST /api/simplify` | `{ texts: [...] }` → `{ texts: [...] }` in plain language  |
+| `POST /api/handoff`  | Makes a family help link (24 hours, kept in memory)        |
+| `GET /h/:id`         | The help page the family member opens                      |
+| `GET /demo/`         | The practice site                                          |
 
 Default models: `claude-sonnet-5-5` plans and `claude-haiku-5-5` rewrites labels.
 Override them with `HOPE_PLANNER_MODEL` and `HOPE_SIMPLIFY_MODEL`.
@@ -68,6 +71,28 @@ settings and the current task. `sidePanel` shows the cards.
 <http://localhost:8787/demo/>, with a cookie banner, a chat widget, a newsletter popup,
 jargon labels and an upsell. Open it, open Hope and try "Appointment with a skin doctor".
 The mock planner can finish it, and a real model does it with fewer questions.
+
+## What works in this MVP
+
+- Goal by typing or voice. One card at a time: choices, a text answer, "fill this in
+  yourself" for private fields, and a check before anything permanent.
+- Silent steps, with a "What I did for you" log and "Step 3 of about 6" progress.
+- Cookie banners (always turned down, never accepted), chat widgets and upsell popups are
+  cleared automatically.
+- Fixed code rules force a confirmation for pay, book, submit, delete and similar actions.
+- Plain-language rewriting of questions and options.
+- Focus, Reading and Calm profiles. Read aloud. Picking up again after the worker restarts.
+- Family help links.
+
+## Known limits
+
+- Works in the top page only: no iframes or shadow DOM yet, so some embedded payment forms
+  and cookie banners are out of reach.
+- One task at a time, in the tab where it started. Links that open new tabs are kept in
+  the same tab.
+- Help links and the plain-language cache live in server memory and are lost on restart.
+- Voice input uses Chrome's speech service, which sends audio to Google.
+- The mock planner is only for trying things out. Use a real model for real sites.
 
 ## Tests
 
