@@ -16,6 +16,20 @@ describe('config', () => {
     assert.equal(c.provider, 'anthropic');
     assert.equal(c.simplifyModel, 'claude-haiku-5-5');
   });
+  it('sets up Bedrock from a bearer token and region', () => {
+    const c = loadConfig({ AWS_BEARER_TOKEN_BEDROCK: 't', AWS_REGION: 'eu-west-1' });
+    assert.equal(c.provider, 'bedrock');
+    assert.equal(c.bedrockBaseUrl, 'https://bedrock-mantle.eu-west-1.api.aws/anthropic');
+    assert.equal(c.simplifyModel, 'anthropic.claude-haiku-5-5');
+    assert.equal(loadConfig({ AWS_BEARER_TOKEN_BEDROCK: 't' }).bedrockBaseUrl, 'https://bedrock-mantle.us-east-1.api.aws/anthropic');
+    assert.equal(loadConfig({ ANTHROPIC_API_KEY: 'k', AWS_BEARER_TOKEN_BEDROCK: 't' }).provider, 'anthropic');
+  });
+
+  it('refuses Bedrock without a token or with a strange region', () => {
+    assert.throws(() => loadConfig({ HOPE_LLM_PROVIDER: 'bedrock' }), /AWS_BEARER_TOKEN_BEDROCK/);
+    assert.throws(() => loadConfig({ AWS_BEARER_TOKEN_BEDROCK: 't', AWS_REGION: 'evil.example/x' }), /not a valid AWS region/);
+  });
+
   it('refuses a provider without its key', () => {
     assert.throws(() => loadConfig({ HOPE_LLM_PROVIDER: 'openai' }), /OPENAI_API_KEY/);
     assert.throws(() => loadConfig({ HOPE_LLM_PROVIDER: 'nope' }), /must be one of/);

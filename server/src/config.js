@@ -3,6 +3,8 @@
 
 const DEFAULT_MODELS = {
   anthropic: { planner: 'claude-sonnet-5-5', simplify: 'claude-haiku-5-5' },
+  // Claude in Amazon Bedrock (bedrock-mantle endpoint): same models, `anthropic.` prefix.
+  bedrock: { planner: 'anthropic.claude-sonnet-5-5', simplify: 'anthropic.claude-haiku-5-5' },
   openai: { planner: 'gpt-4.1', simplify: 'gpt-4.1-mini' },
   mock: { planner: 'mock', simplify: 'mock' },
 };
@@ -16,9 +18,13 @@ function pickProvider(env) {
     return explicit;
   }
   if (env.ANTHROPIC_API_KEY) return 'anthropic';
+  if (env.AWS_BEARER_TOKEN_BEDROCK) return 'bedrock';
   if (env.OPENAI_API_KEY) return 'openai';
   return 'mock';
 }
+
+// Only real AWS region names, because the region goes into the endpoint URL.
+const AWS_REGION = /^[a-z]{2}(-[a-z]+)+-\d{1,2}$/;
 
 function parseList(value) {
   return (value || '')
@@ -35,6 +41,13 @@ export function loadConfig(env = process.env) {
   if (provider === 'anthropic' && !env.ANTHROPIC_API_KEY) {
     throw new Error('HOPE_LLM_PROVIDER is anthropic but ANTHROPIC_API_KEY is not set');
   }
+  const awsRegion = (env.AWS_REGION || env.AWS_DEFAULT_REGION || 'us-east-1').trim();
+  if (provider === 'bedrock') {
+    if (!env.AWS_BEARER_TOKEN_BEDROCK) {
+      throw new Error('HOPE_LLM_PROVIDER is bedrock but AWS_BEARER_TOKEN_BEDROCK is not set');
+    }
+    if (!AWS_REGION.test(awsRegion)) throw new Error(`AWS_REGION "${awsRegion}" is not a valid AWS region`);
+  }
   if (provider === 'openai' && !env.OPENAI_API_KEY) {
     throw new Error('HOPE_LLM_PROVIDER is openai but OPENAI_API_KEY is not set');
   }
@@ -45,6 +58,8 @@ export function loadConfig(env = process.env) {
     publicUrl: (env.HOPE_PUBLIC_URL || `http://localhost:${port}`).replace(/\/+$/, ''),
     provider,
     anthropicApiKey: env.ANTHROPIC_API_KEY || '',
+    bedrockToken: env.AWS_BEARER_TOKEN_BEDROCK || '',
+    bedrockBaseUrl: `https://bedrock-mantle.${awsRegion}.api.aws/anthropic`,
     openaiApiKey: env.OPENAI_API_KEY || '',
     openaiBaseUrl: (env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, ''),
     plannerModel: env.HOPE_PLANNER_MODEL || DEFAULT_MODELS[provider].planner,
