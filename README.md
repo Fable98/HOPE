@@ -51,6 +51,36 @@ through the demo site, but it is not smart.
 Default models: `claude-sonnet-5-5` plans and `claude-haiku-5-5` rewrites labels.
 Override them with `HOPE_PLANNER_MODEL` and `HOPE_SIMPLIFY_MODEL`.
 
+### Using Amazon Bedrock
+
+Hope can call Claude through Amazon Bedrock's `bedrock-mantle` endpoint, which uses the
+same Messages API as the Claude API.
+
+1. In the AWS console, open Amazon Bedrock and check that your account has access to the
+   Claude models you want (Model access).
+2. Create an **API key** in the Amazon Bedrock console. A short-term key lasts up to 12
+   hours and only works in the region where you made it. The identity behind it needs the
+   `bedrock-mantle:CallWithBearerToken` and `bedrock-mantle:CreateInference` permissions.
+3. In `.env`:
+
+   ```sh
+   AWS_BEARER_TOKEN_BEDROCK=your-bedrock-api-key
+   AWS_REGION=us-east-1
+   ```
+
+4. Run `npm start`. The log line should say `planner: bedrock`.
+
+Default Bedrock models are `anthropic.claude-sonnet-5-5` and `anthropic.claude-haiku-5-5`.
+If your account can't use them yet, pick models it can use, for example:
+
+```sh
+HOPE_PLANNER_MODEL=anthropic.claude-sonnet-5
+HOPE_SIMPLIFY_MODEL=anthropic.claude-haiku-4-5
+```
+
+Only Bedrock API keys are supported. Signing requests with AWS access keys or IAM roles
+(SigV4) is not supported yet.
+
 ## Load the extension
 
 1. Start the backend (above).
