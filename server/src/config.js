@@ -3,8 +3,9 @@
 
 const DEFAULT_MODELS = {
   anthropic: { planner: 'claude-sonnet-5-5', simplify: 'claude-haiku-5-5' },
-  // Claude in Amazon Bedrock (bedrock-mantle endpoint): same models, `anthropic.` prefix.
-  bedrock: { planner: 'anthropic.claude-sonnet-5-5', simplify: 'anthropic.claude-haiku-5-5' },
+  // Amazon Bedrock (bedrock-mantle endpoint). Claude models have an `anthropic.` prefix;
+  // other Bedrock models, such as deepseek.v3.2, work too.
+  bedrock: { planner: 'anthropic.claude-sonnet-5', simplify: 'anthropic.claude-haiku-4-5' },
   openai: { planner: 'gpt-4.1', simplify: 'gpt-4.1-mini' },
   mock: { planner: 'mock', simplify: 'mock' },
 };
@@ -59,7 +60,7 @@ export function loadConfig(env = process.env) {
     provider,
     anthropicApiKey: env.ANTHROPIC_API_KEY || '',
     bedrockToken: env.AWS_BEARER_TOKEN_BEDROCK || '',
-    bedrockBaseUrl: `https://bedrock-mantle.${awsRegion}.api.aws/anthropic`,
+    bedrockBaseUrl: `https://bedrock-mantle.${awsRegion}.api.aws`,
     openaiApiKey: env.OPENAI_API_KEY || '',
     openaiBaseUrl: (env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, ''),
     plannerModel: env.HOPE_PLANNER_MODEL || DEFAULT_MODELS[provider].planner,

@@ -79,7 +79,13 @@ export function createLlm(config, fetchImpl = fetch) {
     return createAnthropicClient({ apiKey: config.anthropicApiKey, fetchImpl });
   }
   if (config.provider === 'bedrock') {
-    return createAnthropicClient({ apiKey: config.bedrockToken, baseUrl: config.bedrockBaseUrl, fetchImpl });
+    // Claude models use the Messages API; every other Bedrock model uses the
+    // OpenAI-style chat completions API on the same host and key.
+    const claude = createAnthropicClient({ apiKey: config.bedrockToken, baseUrl: `${config.bedrockBaseUrl}/anthropic`, fetchImpl });
+    const other = createOpenAiClient({ apiKey: config.bedrockToken, baseUrl: `${config.bedrockBaseUrl}/v1`, fetchImpl });
+    return {
+      complete: (req) => (req.model.startsWith('anthropic.') ? claude : other).complete(req),
+    };
   }
   if (config.provider === 'openai') {
     return createOpenAiClient({ apiKey: config.openaiApiKey, baseUrl: config.openaiBaseUrl, fetchImpl });

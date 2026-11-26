@@ -19,9 +19,10 @@ describe('config', () => {
   it('sets up Bedrock from a bearer token and region', () => {
     const c = loadConfig({ AWS_BEARER_TOKEN_BEDROCK: 't', AWS_REGION: 'eu-west-1' });
     assert.equal(c.provider, 'bedrock');
-    assert.equal(c.bedrockBaseUrl, 'https://bedrock-mantle.eu-west-1.api.aws/anthropic');
-    assert.equal(c.simplifyModel, 'anthropic.claude-haiku-5-5');
-    assert.equal(loadConfig({ AWS_BEARER_TOKEN_BEDROCK: 't' }).bedrockBaseUrl, 'https://bedrock-mantle.us-east-1.api.aws/anthropic');
+    assert.equal(c.bedrockBaseUrl, 'https://bedrock-mantle.eu-west-1.api.aws');
+    assert.equal(c.plannerModel, 'anthropic.claude-sonnet-5');
+    assert.equal(c.simplifyModel, 'anthropic.claude-haiku-4-5');
+    assert.equal(loadConfig({ AWS_BEARER_TOKEN_BEDROCK: 't' }).bedrockBaseUrl, 'https://bedrock-mantle.us-east-1.api.aws');
     assert.equal(loadConfig({ ANTHROPIC_API_KEY: 'k', AWS_BEARER_TOKEN_BEDROCK: 't' }).provider, 'anthropic');
   });
 
