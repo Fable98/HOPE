@@ -24,11 +24,13 @@ async function postJson(url, headers, body, fetchImpl) {
   return res.json();
 }
 
-export function createAnthropicClient({ apiKey, fetchImpl = fetch }) {
+// Claude API, or any endpoint with the same Messages API, such as Claude in
+// Amazon Bedrock (bedrock-mantle), which accepts its API key in x-api-key.
+export function createAnthropicClient({ apiKey, baseUrl = 'https://api.anthropic.com', fetchImpl = fetch }) {
   return {
     async complete({ model, system, prompt, maxTokens = 4000 }) {
       const data = await postJson(
-        'https://api.anthropic.com/v1/messages',
+        `${baseUrl}/v1/messages`,
         { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
         {
           model,
@@ -75,6 +77,15 @@ export function createOpenAiClient({ apiKey, baseUrl, fetchImpl = fetch }) {
 export function createLlm(config, fetchImpl = fetch) {
   if (config.provider === 'anthropic') {
     return createAnthropicClient({ apiKey: config.anthropicApiKey, fetchImpl });
+  }
+  if (config.provider === 'bedrock') {
+    // Claude models use the Messages API; every other Bedrock model uses the
+    // OpenAI-style chat completions API on the same host and key.
+    const claude = createAnthropicClient({ apiKey: config.bedrockToken, baseUrl: `${config.bedrockBaseUrl}/anthropic`, fetchImpl });
+    const other = createOpenAiClient({ apiKey: config.bedrockToken, baseUrl: `${config.bedrockBaseUrl}/v1`, fetchImpl });
+    return {
+      complete: (req) => (req.model.startsWith('anthropic.') ? claude : other).complete(req),
+    };
   }
   if (config.provider === 'openai') {
     return createOpenAiClient({ apiKey: config.openaiApiKey, baseUrl: config.openaiBaseUrl, fetchImpl });

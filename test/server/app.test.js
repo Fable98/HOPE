@@ -150,6 +150,48 @@ describe('model provider', () => {
   });
 });
 
+describe('Amazon Bedrock provider', () => {
+  const calls = [];
+  const fakeFetch = async (url, init) => {
+    calls.push({ url, req: JSON.parse(init.body), headers: init.headers });
+    const text = '{"type":"done","message":"ok"}';
+    const body = url.endsWith('/v1/messages')
+      ? { content: [{ type: 'text', text }] }
+      : { choices: [{ message: { content: text } }] };
+    return new Response(JSON.stringify(body), { status: 200 });
+  };
+  const env = { HOPE_LLM_PROVIDER: '', AWS_BEARER_TOKEN_BEDROCK: 'bedrock-token', AWS_REGION: 'ap-south-1' };
+
+  it('sends Claude models to the bedrock-mantle Messages API', async () => {
+    const srv = await startServer(env, { fetchImpl: fakeFetch });
+    try {
+      assert.equal((await (await fetch(`${srv.baseUrl}/health`)).json()).provider, 'bedrock');
+      const res = await postJson(srv.baseUrl, '/api/plan', { goal: 'x', page: samplePage([]) });
+      assert.deepEqual((await res.json()).decision, { type: 'done', message: 'ok' });
+      const call = calls.at(-1);
+      assert.equal(call.url, 'https://bedrock-mantle.ap-south-1.api.aws/anthropic/v1/messages');
+      assert.equal(call.headers['x-api-key'], 'bedrock-token');
+      assert.equal(call.req.model, 'anthropic.claude-sonnet-5');
+    } finally {
+      await srv.close();
+    }
+  });
+
+  it('sends other Bedrock models to the OpenAI-style chat API', async () => {
+    const srv = await startServer({ ...env, HOPE_PLANNER_MODEL: 'deepseek.v3.2' }, { fetchImpl: fakeFetch });
+    try {
+      const res = await postJson(srv.baseUrl, '/api/plan', { goal: 'x', page: samplePage([]) });
+      assert.deepEqual((await res.json()).decision, { type: 'done', message: 'ok' });
+      const call = calls.at(-1);
+      assert.equal(call.url, 'https://bedrock-mantle.ap-south-1.api.aws/v1/chat/completions');
+      assert.equal(call.headers.authorization, 'Bearer bedrock-token');
+      assert.equal(call.req.model, 'deepseek.v3.2');
+    } finally {
+      await srv.close();
+    }
+  });
+});
+
 describe('model failures', () => {
   let srv;
   before(async () => {

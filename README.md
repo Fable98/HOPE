@@ -51,6 +51,41 @@ through the demo site, but it is not smart.
 Default models: `claude-sonnet-5-5` plans and `claude-haiku-5-5` rewrites labels.
 Override them with `HOPE_PLANNER_MODEL` and `HOPE_SIMPLIFY_MODEL`.
 
+### Using Amazon Bedrock
+
+Hope can call Claude through Amazon Bedrock's `bedrock-mantle` endpoint, which uses the
+same Messages API as the Claude API.
+
+1. In the AWS console, open Amazon Bedrock and check that your account has access to the
+   Claude models you want (Model access).
+2. Create an **API key** in the Amazon Bedrock console. A short-term key lasts up to 12
+   hours and only works in the region where you made it. The identity behind it needs the
+   `bedrock-mantle:CallWithBearerToken` and `bedrock-mantle:CreateInference` permissions.
+3. In `.env`:
+
+   ```sh
+   AWS_BEARER_TOKEN_BEDROCK=your-bedrock-api-key
+   AWS_REGION=us-east-1
+   ```
+
+4. Run `npm start`. The log line should say `planner: bedrock`.
+
+Default Bedrock models are `anthropic.claude-sonnet-5` and `anthropic.claude-haiku-4-5`.
+Other Bedrock models work too. Claude models (`anthropic.` prefix) go to the Messages
+API; any other model goes to Bedrock's OpenAI-style chat API, with the same key. If your
+account can't use Claude, for example:
+
+```sh
+HOPE_PLANNER_MODEL=deepseek.v3.2
+HOPE_SIMPLIFY_MODEL=deepseek.v3.2
+```
+
+Errors like "not available for this account" (403) mean the account has no access to that
+model. "does not exist" (404) means the model ID is wrong for that region.
+
+Only Bedrock API keys are supported. Signing requests with AWS access keys or IAM roles
+(SigV4) is not supported yet.
+
 ## Load the extension
 
 1. Start the backend (above).
